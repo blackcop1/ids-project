@@ -1,0 +1,38 @@
+"""Generate synthetic network traffic dataset for testing"""
+
+import numpy as np
+import pandas as pd
+from pathlib import Path
+import sys
+
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.utils import Logger, print_section
+
+def generate_sample_data(num_samples=10000, output_path='data/UNSW-NB15_training-set.csv'):
+    """Generate synthetic UNSW-NB15-like dataset
+    
+    Args:
+        num_samples: Number of samples to generate
+        output_path: Where to save the CSV file
+    """
+    
+    logger = Logger()
+    print_section('Generating Synthetic Network Traffic Data', '=')
+    
+    logger.info(f'Generating {num_samples:,} synthetic samples...')
+    
+    # Set random seed for reproducibility
+    np.random.seed(42)
+    
+    # Define features
+    features = [
+        'srcip', 'sport', 'dstip', 'dsport', 'proto', 'state', 'dur',
+        'sbytes', 'dbytes', 'sttl', 'dttl', 'sloss', 'dloss', 'service',
+        'sload', 'dload', 'spkts', 'dpkts', 'swin', 'dwin', 'stcpb',
+        'dtcpb', 'smeansz', 'dmeansz', 'trans_depth', 'res_bdy_len',
+        'sjit', 'djit', 'stime', 'ltime', 'sintpkt', 'dintpkt', 'tcprtt',
+        'synack', 'ackdat', 'is_sm_ips_ports', 'ct_state_ttl', 'ct_flw_http_mthd',
+        'is_ftp_login', 'ct_ftp_cmd', 'ct_srv_src', 'ct_srv_dst', 'ct_dst_ltm',
+        'ct_src_ltm', 'ct_src_dport_ltm', 'Label'\n    ]\n    \n    # Attack types\n    attack_types = [\n        'Normal', 'Backdoor', 'DoS', 'Exploits', 'Fuzzers',\n        'Generic', 'Reconnaissance', 'Shellcode', 'Worms'\n    ]\n    \n    data = []\n    \n    logger.info(f'Using {len(attack_types)} attack types: {attack_types}')\n    logger.info('Generating features...')\n    \n    for i in range(num_samples):\n        if (i + 1) % 2000 == 0:\n            logger.info(f'  Progress: {i + 1:,}/{num_samples:,}')\n        \n        # Generate IP addresses (simplified)\n        src_ip = f'{np.random.randint(1, 255)}.{np.random.randint(0, 255)}.{np.random.randint(0, 255)}.{np.random.randint(0, 255)}'\n        dst_ip = f'{np.random.randint(1, 255)}.{np.random.randint(0, 255)}.{np.random.randint(0, 255)}.{np.random.randint(0, 255)}'\n        \n        # Generate ports\n        src_port = np.random.randint(1024, 65535)\n        dst_port = np.random.randint(1, 1024) if np.random.random() > 0.7 else np.random.randint(1024, 65535)\n        \n        # Protocol (TCP=6, UDP=17, ICMP=1)\n        proto = np.random.choice([1, 6, 17], p=[0.1, 0.7, 0.2])\n        \n        # Connection state\n        state = np.random.choice(['CON', 'INT', 'CLO', 'REQ', 'RST'], p=[0.4, 0.2, 0.2, 0.1, 0.1])\n        \n        # Duration\n        dur = np.random.exponential(scale=100) if np.random.random() > 0.8 else np.random.exponential(scale=10)\n        \n        # Bytes\n        sbytes = int(np.random.exponential(scale=1000))\n        dbytes = int(np.random.exponential(scale=1000))\n        \n        # TTL values\n        sttl = np.random.randint(1, 256)\n        dttl = np.random.randint(1, 256)\n        \n        # Loss\n        sloss = np.random.choice([0, 1], p=[0.95, 0.05]) if np.random.random() > 0.8 else 0\n        dloss = np.random.choice([0, 1], p=[0.95, 0.05]) if np.random.random() > 0.8 else 0\n        \n        # Service\n        service = np.random.choice(['http', 'https', 'ssh', 'ftp', 'dns', 'smtp', '-'], p=[0.25, 0.25, 0.15, 0.1, 0.1, 0.1, 0.05])\n        \n        # Load\n        sload = np.random.exponential(scale=0.1)\n        dload = np.random.exponential(scale=0.1)\n        \n        # Packets\n        spkts = int(np.random.exponential(scale=10))\n        dpkts = int(np.random.exponential(scale=10))\n        \n        # Window sizes\n        swin = np.random.randint(0, 65535)\n        dwin = np.random.randint(0, 65535)\n        \n        # TCP base sequence numbers\n        stcpb = np.random.randint(0, 2**32)\n        dtcpb = np.random.randint(0, 2**32)\n        \n        # Mean sizes\n        smeansz = np.random.exponential(scale=100) if spkts > 0 else 0\n        dmeansz = np.random.exponential(scale=100) if dpkts > 0 else 0\n        \n        # Other features\n        trans_depth = np.random.randint(0, 10)\n        res_bdy_len = int(np.random.exponential(scale=1000))\n        sjit = np.random.exponential(scale=10)\n        djit = np.random.exponential(scale=10)\n        stime = np.random.randint(0, 1000000)\n        ltime = stime + int(np.random.exponential(scale=1000))\n        sintpkt = np.random.exponential(scale=100)\n        dintpkt = np.random.exponential(scale=100)\n        tcprtt = np.random.exponential(scale=50)\n        synack = np.random.exponential(scale=10)\n        ackdat = np.random.exponential(scale=10)\n        is_sm_ips_ports = np.random.choice([0, 1], p=[0.9, 0.1])\n        ct_state_ttl = np.random.randint(0, 100)\n        ct_flw_http_mthd = np.random.randint(0, 10)\n        is_ftp_login = np.random.choice([0, 1], p=[0.95, 0.05])\n        ct_ftp_cmd = np.random.randint(0, 5)\n        ct_srv_src = np.random.randint(0, 100)\n        ct_srv_dst = np.random.randint(0, 100)\n        ct_dst_ltm = np.random.randint(0, 100)\n        ct_src_ltm = np.random.randint(0, 100)\n        ct_src_dport_ltm = np.random.randint(0, 100)\n        \n        # Label (attack type) - 80% Normal, 20% Attacks\n        if np.random.random() > 0.8:\n            label = np.random.choice(attack_types[1:])\n        else:\n            label = 'Normal'\n        \n        # Create row\n        row = [\n            src_ip, src_port, dst_ip, dst_port, proto, state, dur,\n            sbytes, dbytes, sttl, dttl, sloss, dloss, service,\n            sload, dload, spkts, dpkts, swin, dwin, stcpb,\n            dtcpb, smeansz, dmeansz, trans_depth, res_bdy_len,\n            sjit, djit, stime, ltime, sintpkt, dintpkt, tcprtt,\n            synack, ackdat, is_sm_ips_ports, ct_state_ttl, ct_flw_http_mthd,\n            is_ftp_login, ct_ftp_cmd, ct_srv_src, ct_srv_dst, ct_dst_ltm,\n            ct_src_ltm, ct_src_dport_ltm, label\n        ]\n        \n        data.append(row)\n    \n    # Create DataFrame\n    logger.info('Creating DataFrame...')\n    df = pd.DataFrame(data, columns=features)\n    \n    # Save to CSV\n    output_path = Path(output_path)\n    output_path.parent.mkdir(parents=True, exist_ok=True)\n    \n    logger.info(f'Saving dataset to {output_path}...')\n    df.to_csv(output_path, index=False)\n    \n    # Print summary\n    print_section('Dataset Summary', '=')\n    logger.info(f'Total samples: {len(df):,}')\n    logger.info(f'Total features: {len(df.columns)}')\n    logger.info(f'File size: {output_path.stat().st_size / (1024*1024):.2f} MB')\n    logger.info(f'\\nAttack distribution:')\n    \n    for attack, count in df['Label'].value_counts().items():\n        percentage = (count / len(df)) * 100\n        logger.info(f'  {attack}: {count:,} ({percentage:.1f}%)')\n    \n    logger.info(f'\\n✅ Dataset generated successfully!')\n    logger.info(f'Location: {output_path.absolute()}')\n    logger.info(f'\\nNext step: Run the training pipeline')\n    logger.info(f'  python main.py')\n    \n    return df\n\nif __name__ == '__main__':\n    try:\n        # Generate dataset\n        df = generate_sample_data(num_samples=10000)\n        print('\\n✅ SUCCESS! Dataset ready for training.')\n    except KeyboardInterrupt:\n        print('\\n⚠️ Generation interrupted by user')\n    except Exception as e:\n        print(f'\\n❌ Error: {str(e)}')\n        import traceback\n        traceback.print_exc()\n
